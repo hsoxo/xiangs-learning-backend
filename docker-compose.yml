@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./lx-flask
+    command: python app.py run -h 0.0.0.0
+    volumes:
+      - ./lx-flask:/usr/src/app/
+    ports:
+      - 5123:5123
+    env_file:
+      - ./lx-flask/.env
+    networks:
+      - appnet
+  web:
+    image: nginx
+    volumes:
+      - ./lx-react/build:/usr/share/nginx/html:ro
+      - ./lx-react/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 80:80
+    command: [nginx-debug, '-g', 'daemon off;']
+    networks:
+      - appnet
+  db:
+    image: mysql:8.0.21
+    ports:
+      - 30000:3306
+    environment:
+      MYSQL_DATABASE: lixiang
+      MYSQL_ROOT_PASSWORD: Xiaowu21.
+      MYSQL_ROOT_HOST: 0.0.0.0
+      MYSQL_USER: hs
+      MYSQL_PASSWORD: Xiaowu21
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/:ro
+      - ./data:/var/lib/mysql
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    external: true
